@@ -1,0 +1,8 @@
+
+alias sad=ssh-add
+alias sal="ssh-add -l"
+alias skg=ssh-keygen
+alias slf="ssh-keygen -lf"
+
+export GPG_TTY=$(tty)
+
