@@ -4,5 +4,7 @@ alias sal="ssh-add -l"
 alias skg=ssh-keygen
 alias slf="ssh-keygen -lf"
 
+alias fps=fingerprings
+
 export GPG_TTY=$(tty)
 
