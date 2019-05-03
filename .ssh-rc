@@ -1,10 +1,9 @@
 
-alias sad=ssh-add
-alias sal="ssh-add -l"
-alias skg=ssh-keygen
-alias slf="ssh-keygen -lf"
-
-alias fps=fingerprings
+defn sad ssh-add
+defn sal ssh-add -l
+defn skg ssh-keygen
+defn slf ssh-keygen -lf
+defn slm ssh-keygen -l -E md5 -f
 
 export GPG_TTY=$(tty)
 
