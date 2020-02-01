@@ -9,7 +9,7 @@ defn slm ssh-keygen -l -E md5 -f
 export GPG_TTY=$(tty)
 
 port_forward() {
-  if [ $# -ne 2 ]; then
+  if [ $# -lt 2 ]; then
     echo "Usage: $0 <host> <port>" >&2
     return 1
   fi
@@ -17,7 +17,7 @@ port_forward() {
   shift
   port="$1"
   shift
-  ssh -N -L "localhost:$port:localhost:$port" "$host"
+  ssh "$@" -N -L "localhost:$port:localhost:$port" "$host"
 }
 export -f port_forward
 defn pfw port_forward
