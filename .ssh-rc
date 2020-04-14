@@ -2,6 +2,7 @@
 defn sad ssh-add
 defn sal ssh-add -L
 defn sall ssh-add -l
+defn sfp ssh-add -E md5 -l
 defn skg ssh-keygen
 defn slf ssh-keygen -lf
 defn slm ssh-keygen -l -E md5 -f
