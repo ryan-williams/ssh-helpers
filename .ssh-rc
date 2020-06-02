@@ -1,11 +1,37 @@
 
 defn sad ssh-add
-defn sal ssh-add -L
-defn sall ssh-add -l
-defn sfp ssh-add -E md5 -l
 defn skg ssh-keygen
-defn slf ssh-keygen -lf
-defn slm ssh-keygen -l -E md5 -f
+
+ssh_fingerprints() {
+  if [ $# -eq 0 ]; then
+    echo "Usage: $0 <hash_fn> [file...]" >&2
+    return 1
+  fi
+  hash_fn="$1"; shift
+  if [ "$hash_fn" != "sha256" -a "$hash_fn" != "md5" ]; then
+    echo "Invalid hash_fn: $hash_fn" >&2
+    return 2
+  fi
+  if [ $# -eq 0 ]; then
+    read -d '' -r -a lines < <(cat)
+    if [ ${#lines[@]} -gt 0 ]; then
+      ssh_fingerprints "$hash_fn" "${lines[@]}"
+    else
+      ssh-add -l -E "$hash_fn"
+    fi
+  else
+    for f in "$@"; do
+      ssh-keygen -l -E "$hash_fn" -f "$f"
+    done
+  fi
+}
+export -f ssh_fingerprints
+defn sfp ssh_fingerprints md5
+defn sfm ssh_fingerprints md5
+defn slf ssh_fingerprints md5
+defn sfs ssh_fingerprints sha256
+
+defn sal ssh-add -L
 
 export GPG_TTY=$(tty)
 
