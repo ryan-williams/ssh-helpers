@@ -13,12 +13,7 @@ ssh_fingerprints() {
     return 2
   fi
   if [ $# -eq 0 ]; then
-    read -d '' -r -a lines < <(cat)
-    if [ ${#lines[@]} -gt 0 ]; then
-      ssh_fingerprints "$hash_fn" "${lines[@]}"
-    else
-      ssh-add -l -E "$hash_fn"
-    fi
+    ssh-add -l -E "$hash_fn"
   else
     for f in "$@"; do
       ssh-keygen -l -E "$hash_fn" -f "$f"
