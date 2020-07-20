@@ -21,10 +21,10 @@ ssh_fingerprints() {
   fi
 }
 export -f ssh_fingerprints
-defn sfp ssh_fingerprints md5
-defn sfm ssh_fingerprints md5
-defn slf ssh_fingerprints md5
-defn sfs ssh_fingerprints sha256
+defn sfp ssh_fingerprints.py
+defn sfm ssh_fingerprints.py
+defn slf ssh_fingerprints.py
+defn sfs ssh_fingerprints.py -Ms
 
 defn sal ssh-add -L
 

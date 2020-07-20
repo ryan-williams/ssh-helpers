@@ -8,6 +8,7 @@ from sys import stdout
 
 
 parser = ArgumentParser()
+parser.add_argument('input',nargs='*',help='Specific key files to print; by default, ssh-agent keys are printed')
 parser.add_argument('-a','--all',action='store_true',help='When set, show all discovered pubkeys (from --include paths; default: only show keys added to ssh-agent)')
 parser.add_argument('-i','--include',nargs='*',help='Files or directories to include in the search for public keys; default: $HOME/.ssh')
 parser.add_argument('-M','--no-md5',action='store_true',help='When set, exclude MD5 fingerprints from the output')
@@ -15,6 +16,9 @@ parser.add_argument('-s','--sha256',action='store_true',help='When set, include 
 parser.add_argument('-t','--field-separator',default='\t',metavar='char',help='Use `char` as a field separator character (default: <TAB>)')
 args = parser.parse_args()
 all = args.all
+inputs = args.input
+if all and inputs:
+    raise ValueError(f"Specify at most one of <input...>, --all")
 includes = [Path.home() / '.ssh'] + [ Path(path) for path in (args.include or []) ]
 md5 = not args.no_md5
 sha256 = args.sha256
@@ -67,7 +71,7 @@ pubkey_paths = [
         if include.is_dir()
         else [ include ]
     )
-]
+] + inputs
 
 
 def merge(o, *dicts, copy=True):
@@ -107,6 +111,24 @@ pubkeys_by_md5 = { d['md5']: d for d in pubkeys  if 'md5' in d }
 pubkeys_by_sha256 = { d['sha256']: d for d in pubkeys if 'sha256' in d }
 pubkeys_by_path = { d['path']: d for d in pubkeys }
 
+if inputs:
+    pubkeys = [ key for key in pubkeys if key['path'] in inputs ]
+    pubkeys_by_md5 = { k:v for k,v in pubkeys_by_md5.items() if v['path'] in inputs }
+    pubkeys_by_sha256 = { k:v for k,v in pubkeys_by_md5.items() if v['path'] in inputs }
+    pubkeys_by_path = { k:v for k,v in pubkeys_by_md5.items() if k in inputs }
+
+
+for key in agent_md5s:
+    md5 = key['md5']
+    if md5 in pubkeys_by_md5:
+        pubkeys_by_md5[md5]['agent'] = True
+
+
+for key in agent_sha256s:
+    sha256 = key['sha256']
+    if sha256 in pubkeys_by_sha256:
+        pubkeys_by_sha256[sha256]['agent'] = True
+
 if md5:
     agent_keys = agent_md5s
     all_keys = pubkeys_by_md5
@@ -118,27 +140,13 @@ else:
     hsh = 'sha256'
     other = False
 
-agent_results = []
-for agent_key in agent_keys:
-    hash = agent_key[hsh]
-    if hash in all_keys:
-        o = all_keys[hash]
-        o['agent'] = True
-    else:
-        o = { 'path': None }
-    result = merge(agent_key, o)
-    path = result['path']
-    if path and other:
-        result = merge(result, pubkeys_by_path[path])
-
-    agent_results.append(result)
-
 
 KEYS = [ 'md5', 'sha256', 'path', 'type', 'bits', 'comment' ]
-if all:
+if inputs or all:
     KEYS = [ lambda d: '*' if d['agent'] else ' ', ] + KEYS
 
 def print_results(results):
+    # print(results)
     for result in results:
         for key in KEYS:
             if callable(key):
@@ -149,7 +157,22 @@ def print_results(results):
                 stdout.write(str(result[key]) + field_separator)
         stdout.write('\n')
 
-if all:
+if all or inputs:
     print_results(pubkeys)
 else:
+    agent_results = []
+    for key in agent_keys:
+        hash = key[hsh]
+        if hash in all_keys:
+            o = all_keys[hash]
+            #o['agent'] = True
+        else:
+            o = {}
+        result = merge(key, o)
+        path = result.get('path', None)
+        if path and other:
+            result = merge(result, pubkeys_by_path[path])
+
+        agent_results.append(result)
+
     print_results(agent_results)
