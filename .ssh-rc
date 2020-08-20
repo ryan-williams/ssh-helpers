@@ -43,3 +43,17 @@ port_forward() {
 }
 export -f port_forward
 defn pfw port_forward
+
+port_reverse() {
+  if [ $# -lt 2 ]; then
+    echo "Usage: $0 <host> <port>" >&2
+    return 1
+  fi
+  host="$1"
+  shift
+  port="$1"
+  shift
+  ssh "$@" -N -R "localhost:$port:localhost:$port" "$host"
+}
+export -f port_reverse
+defn rfw port_reverse
