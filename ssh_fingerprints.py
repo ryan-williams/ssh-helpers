@@ -3,7 +3,7 @@
 from argparse import ArgumentParser
 from pathlib import Path
 from re import match
-from subprocess import check_output
+from subprocess import CalledProcessError, check_output
 from sys import stdout
 
 
@@ -29,7 +29,10 @@ field_separator = args.field_separator
 
 def lines(*args, rm_empty_trailing_line=True):
     cmd = [ str(arg) for arg in args if arg is not None ]
-    lines = check_output(cmd).decode().split('\n')
+    try:
+        lines = check_output(cmd).decode().split('\n')
+    except CalledProcessError:
+        return []
     if rm_empty_trailing_line and lines and not lines[-1]:
         lines = lines[:-1]
     return lines
