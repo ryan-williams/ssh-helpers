@@ -38,7 +38,7 @@ def lines(*args, rm_empty_trailing_line=True):
     return lines
 
 
-FINGERPRINT_REGEX = r'^(?P<bits>\d+) (?P<hash_fn>SHA256|MD5):(?P<hash>[\w/\+:]+) (?P<comment>.*) \((?P<type>[A-Z]+)\)$'
+FINGERPRINT_REGEX = r'^(?P<bits>\d+) (?P<hash_fn>SHA256|MD5):(?P<hash>[\w/\+:]+) (?P<comment>.*) \((?P<type>[A-Z\d]+)\)$'
 def parse_fingerprint_line(line):
     m = match(FINGERPRINT_REGEX, line)
     if not m:
