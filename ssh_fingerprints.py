@@ -6,14 +6,13 @@ from re import match
 from subprocess import CalledProcessError, check_output
 from sys import stdout
 
-
 parser = ArgumentParser()
-parser.add_argument('input',nargs='*',help='Specific key files to print; by default, ssh-agent keys are printed')
-parser.add_argument('-a','--all',action='store_true',help='When set, show all discovered pubkeys (from --include paths; default: only show keys added to ssh-agent)')
-parser.add_argument('-i','--include',nargs='*',help='Files or directories to include in the search for public keys; default: $HOME/.ssh')
-parser.add_argument('-M','--no-md5',action='store_true',help='When set, exclude MD5 fingerprints from the output')
-parser.add_argument('-s','--sha256',action='store_true',help='When set, include SHA256 fingerprints in the output (by default, only MD5 fingerprints are shown')
-parser.add_argument('-t','--field-separator',default='\t',metavar='char',help='Use `char` as a field separator character (default: <TAB>)')
+parser.add_argument('input', nargs='*', help='Specific key files to print; by default, ssh-agent keys are printed')
+parser.add_argument('-a', '--all', action='store_true', help='When set, show all discovered pubkeys (from --include paths; default: only show keys added to ssh-agent)')
+parser.add_argument('-i', '--include', nargs='*', help='Files or directories to include in the search for public keys; default: $HOME/.ssh')
+parser.add_argument('-M', '--no-md5', action='store_true', help='When set, exclude MD5 fingerprints from the output')
+parser.add_argument('-s', '--sha256', action='store_true', help='When set, include SHA256 fingerprints in the output (by default, only MD5 fingerprints are shown')
+parser.add_argument('-t', '--field-separator', default='\t', metavar='char', help='Use `char` as a field separator character (default: <TAB>)')
 args = parser.parse_args()
 all = args.all
 inputs = args.input
@@ -39,6 +38,8 @@ def lines(*args, rm_empty_trailing_line=True):
 
 
 FINGERPRINT_REGEX = r'^(?P<bits>\d+) (?P<hash_fn>SHA256|MD5):(?P<hash>[\w/\+:]+) (?P<comment>.*) \((?P<type>[A-Z\d]+)\)$'
+
+
 def parse_fingerprint_line(line):
     m = match(FINGERPRINT_REGEX, line)
     if not m:
@@ -50,10 +51,11 @@ def parse_fingerprint_line(line):
     del d['hash_fn']
     return d
 
+
 if md5:
     agent_md5s = [
         parse_fingerprint_line(line)
-        for line in lines('ssh-add','-l','-E','md5')
+        for line in lines('ssh-add', '-l', '-E', 'md5')
     ]
 else:
     agent_md5s = []
@@ -91,7 +93,7 @@ def merge(o, *dicts, copy=True):
 
 
 def get_fingerprint_line(path, hash):
-    [line] = lines('ssh-keygen','-l','-E',hash,'-f',path)
+    [line] = lines('ssh-keygen', '-l', '-E', hash, '-f', path)
     d = parse_fingerprint_line(line)
     d['path'] = path
     return d
@@ -110,22 +112,20 @@ pubkeys = [
     for pubkey_path in pubkey_paths
 ]
 
-pubkeys_by_md5 = { d['md5']: d for d in pubkeys  if 'md5' in d }
-pubkeys_by_sha256 = { d['sha256']: d for d in pubkeys if 'sha256' in d }
-pubkeys_by_path = { d['path']: d for d in pubkeys }
+pubkeys_by_md5 = {d['md5']: d for d in pubkeys if 'md5' in d}
+pubkeys_by_sha256 = {d['sha256']: d for d in pubkeys if 'sha256' in d}
+pubkeys_by_path = {d['path']: d for d in pubkeys}
 
 if inputs:
-    pubkeys = [ key for key in pubkeys if key['path'] in inputs ]
-    pubkeys_by_md5 = { k:v for k,v in pubkeys_by_md5.items() if v['path'] in inputs }
-    pubkeys_by_sha256 = { k:v for k,v in pubkeys_by_md5.items() if v['path'] in inputs }
-    pubkeys_by_path = { k:v for k,v in pubkeys_by_md5.items() if k in inputs }
-
+    pubkeys = [key for key in pubkeys if key['path'] in inputs]
+    pubkeys_by_md5 = {k: v for k, v in pubkeys_by_md5.items() if v['path'] in inputs}
+    pubkeys_by_sha256 = {k: v for k, v in pubkeys_by_md5.items() if v['path'] in inputs}
+    pubkeys_by_path = {k: v for k, v in pubkeys_by_md5.items() if k in inputs}
 
 for key in agent_md5s:
     md5 = key['md5']
     if md5 in pubkeys_by_md5:
         pubkeys_by_md5[md5]['agent'] = True
-
 
 for key in agent_sha256s:
     sha256 = key['sha256']
@@ -148,6 +148,7 @@ KEYS = [ 'md5', 'sha256', 'path', 'type', 'bits', 'comment' ]
 if inputs or all:
     KEYS = [ lambda d: '*' if d['agent'] else ' ', ] + KEYS
 
+
 def print_results(results):
     # print(results)
     for result in results:
@@ -160,6 +161,7 @@ def print_results(results):
                 stdout.write(str(result[key]) + field_separator)
         stdout.write('\n')
 
+
 if all or inputs:
     print_results(pubkeys)
 else:
@@ -168,7 +170,7 @@ else:
         hash = key[hsh]
         if hash in all_keys:
             o = all_keys[hash]
-            #o['agent'] = True
+            # o['agent'] = True
         else:
             o = {}
         result = merge(key, o)
