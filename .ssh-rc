@@ -39,10 +39,13 @@ port_forward() {
   shift
   port="$1"
   shift
-  ssh "$@" -N -L "localhost:$port:localhost:$port" "$host"
+  port1="${port%%:*}"
+  port2="${port##*:}"
+  ssh "$@" -N -L "localhost:$port1:localhost:$port2" "$host"
 }
 export -f port_forward
 defn pfw port_forward
+defn spf port_forward
 
 port_reverse() {
   if [ $# -lt 2 ]; then
