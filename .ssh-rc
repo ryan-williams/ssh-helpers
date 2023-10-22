@@ -60,3 +60,33 @@ port_reverse() {
 }
 export -f port_reverse
 defn rfw port_reverse
+
+set_hostname() {
+    if [ $# -ne 2 ]; then
+        echo "Usage: $0 <host> <ip or hostname>" >&2
+        return 1
+    fi
+    host="$1"; shift
+    hostname="$1"; shift
+    hostname_path=$HOME/.ssh/$host.hostname
+    content="HostName $hostname"
+    echo "Writing to $hostname_path: $content" >&2
+    echo "$content" > "$hostname_path"
+}
+export -f set_hostname
+defn shn set_hostname
+
+set_aws_hostname() {
+    if [ $# -ne 2 ]; then
+        echo "Usage: $0 <host> <instance_id>" >&2
+        return 1
+    fi
+    host="$1"; shift
+    instance_id="$1"; shift
+    cmd=(aws ec2 describe-instances --instance-ids "$instance_id" --query 'Reservations[0].Instances[0].PublicDnsName' --output text)
+    echo "Fetching hostname: ${cmd[@]}" >&2
+    hostname="$("${cmd[@]}")"
+    set_hostname "$host" "$hostname"
+}
+export -f set_aws_hostname
+defn sahn set_aws_hostname
