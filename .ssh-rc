@@ -90,3 +90,5 @@ set_aws_hostname() {
 }
 export -f set_aws_hostname
 defn sahn set_aws_hostname
+
+defn scpr scp -r
