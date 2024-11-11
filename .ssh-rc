@@ -4,7 +4,7 @@ defn skg ssh-keygen
 
 ssh_fingerprints() {
   if [ $# -eq 0 ]; then
-    echo "Usage: $0 <hash_fn> [file...]" >&2
+    echo "Usage: ${FUNCNAME[0]} <hash_fn> [file...]" >&2
     return 1
   fi
   hash_fn="$1"; shift
@@ -32,7 +32,7 @@ export GPG_TTY=$(tty)
 
 port_forward() {
   if [ $# -lt 2 ]; then
-    echo "Usage: $0 <host> <port>" >&2
+    echo "Usage: ${FUNCNAME[0]} <host> <port>" >&2
     return 1
   fi
   host="$1"
@@ -49,7 +49,7 @@ defn spf port_forward
 
 port_reverse() {
   if [ $# -lt 2 ]; then
-    echo "Usage: $0 <host> <port>" >&2
+    echo "Usage: ${FUNCNAME[0]} <host> <port>" >&2
     return 1
   fi
   host="$1"
@@ -63,7 +63,7 @@ defn rfw port_reverse
 
 set_hostname() {
     if [ $# -ne 2 ]; then
-        echo "Usage: $0 <host> <ip or hostname>" >&2
+        echo "Usage: ${FUNCNAME[0]} <host> <ip or hostname>" >&2
         return 1
     fi
     host="$1"; shift
@@ -78,7 +78,7 @@ defn shn set_hostname
 
 set_aws_hostname() {
     if [ $# -ne 2 ]; then
-        echo "Usage: $0 <host> <instance_id>" >&2
+        echo "Usage: ${FUNCNAME[0]} <host> <instance_id>" >&2
         return 1
     fi
     host="$1"; shift
