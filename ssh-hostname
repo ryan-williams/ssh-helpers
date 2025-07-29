@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -e
+
+if [ $# -lt 2 ]; then
+  echo "Usage: $0 [ssh args...] <host> <hostname override>" >&2
+  exit 1
+fi
+
+hostname="${@: -1}"
+set -- "${@:1:$#-1}"
+host="${@: -1}"
+set -- "${@:1:$#-1}"
+
+cmd=(ssh "$@" "$host" -o "HostName=$hostname")
+echo "Running: ${cmd[*]}" >&2
+"${cmd[@]}"
